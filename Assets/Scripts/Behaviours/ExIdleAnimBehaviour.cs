@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Animator), typeof(SpriteRenderer))]
+[RequireComponent(typeof(Animator))]
 public class ExIdleAnimBehaviour : MonoBehaviour
 {
     private Animator _animator;
-    private SpriteRenderer _sr;
 
     [SerializeField] private List<string> IdleParams = new List<string>();
 
@@ -15,23 +14,24 @@ public class ExIdleAnimBehaviour : MonoBehaviour
     private void Awake()
     {
         _animator = GetComponent<Animator>();
-        _sr = GetComponent<SpriteRenderer>();
 
         CurrentIdleTime = IdleWaitTime;
     }
 
-    public void CheckIdleTime()
+    public bool CheckIdleTime(bool idle)
     {
         if (Time.time > CurrentIdleTime)
         {
+            idle = false;
             RunAnimation();
         }
+        return idle;
     }
 
     public void RunAnimation()
     {
         int rand = Random.Range(0, IdleParams.Count);
-
+        
         if (rand == 0)
         {
             _animator.SetBool(IdleParams[0], true);

@@ -1,15 +1,17 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(MoveBehaviour))]
-[RequireComponent(typeof(AnimationBehaviour))]
+[RequireComponent(typeof(MoveBehaviour), typeof(GravityChangeBehaviour), typeof(MoveAnimBehaviour))]
 [RequireComponent(typeof(ExIdleAnimBehaviour))]
 public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 {
     private InputSystem_Actions inputActions;
     private MoveBehaviour _mb;
-    private AnimationBehaviour _ab;
+    private GravityChangeBehaviour _gcb;
+    private MoveAnimBehaviour _ab;
     private ExIdleAnimBehaviour _xab;
+
+    private bool OnFloor = true;
 
     private void Awake()
     {
@@ -17,7 +19,8 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         inputActions.Player.SetCallbacks(this);
 
         _mb = GetComponent<MoveBehaviour>();
-        _ab = GetComponent<AnimationBehaviour>();
+        _gcb = GetComponent<GravityChangeBehaviour>();
+        _ab = GetComponent<MoveAnimBehaviour>();
         _xab = GetComponent<ExIdleAnimBehaviour>();
     }
 
@@ -34,13 +37,25 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     {
         if (_ab.idle)
         {
-            _xab.CheckIdleTime();
+            _ab.idle = _xab.CheckIdleTime(_ab.idle);
         }
     }
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        throw new System.NotImplementedException();
+        if (OnFloor)
+        {
+            _gcb.ChangeGravity();
+            _xab.CancelAnimations();
+
+            _ab.idle = false;
+
+            if (context.canceled)
+            {
+                _ab.idle = true;
+                _xab.SetIdleTime();
+            }
+        }
     }
 
     public void OnMove(InputAction.CallbackContext context)
@@ -57,6 +72,24 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         {
             _ab.idle = true;
             _xab.SetIdleTime();
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer == 20)
+        {
+            OnFloor = true;
+
+            _gcb.FinishJump();
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer == 20)
+        {
+            OnFloor = false;
         }
     }
 }
