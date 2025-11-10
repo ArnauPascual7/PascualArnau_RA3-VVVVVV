@@ -15,7 +15,7 @@ public class ExIdleAnimBehaviour : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
 
-        CurrentIdleTime = IdleWaitTime;
+        CurrentIdleTime = IdleWaitTime + Time.time;
     }
 
     public bool CheckIdleTime(bool idle)
