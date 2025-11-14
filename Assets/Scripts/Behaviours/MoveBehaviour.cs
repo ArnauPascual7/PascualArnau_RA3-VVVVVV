@@ -5,6 +5,8 @@ public class MoveBehaviour : MonoBehaviour
 {
     private Rigidbody2D _rb;
     private SpriteRenderer _sr;
+
+    [Header("Configuració")]
     [SerializeField] private float speed;
 
     private void Awake()

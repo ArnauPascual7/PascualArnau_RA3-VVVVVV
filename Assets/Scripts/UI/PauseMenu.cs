@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -5,8 +6,12 @@ using UnityEngine.SceneManagement;
 public class PauseMenu : MonoBehaviour, InputSystem_Actions.IMenuActions
 {
     private InputSystem_Actions inputActions;
+
+    [Header("Configuració")]
     [SerializeField] private GameObject PauseMenuUI;
     [SerializeField] private GameObject PauseButton;
+
+    public static event Action<bool> GamePausedEvent = delegate { };
 
     public static bool GameIsPaused = false;
 
@@ -67,9 +72,11 @@ public class PauseMenu : MonoBehaviour, InputSystem_Actions.IMenuActions
         if (GameIsPaused)
         {
             Resume();
+            GamePausedEvent.Invoke(false);
         }
         else
         {
+            GamePausedEvent.Invoke(true);
             Pause();
         }
     }

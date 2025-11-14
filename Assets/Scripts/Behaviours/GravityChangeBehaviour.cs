@@ -9,6 +9,7 @@ public class GravityChangeBehaviour : MonoBehaviour
 
     private const string JumpParam = "Jumping";
 
+    [Header("Configuració")]
     public bool jumping;
 
     private void Awake()

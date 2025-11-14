@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
+    [Header("Configuració")]
     [SerializeField] private Transform Player;
 
     private void LateUpdate()

@@ -6,6 +6,7 @@ public class ExIdleAnimBehaviour : MonoBehaviour
 {
     private Animator _animator;
 
+    [Header("Configuració")]
     [SerializeField] private List<string> IdleParams = new List<string>();
 
     [SerializeField] private float IdleWaitTime = 5f;

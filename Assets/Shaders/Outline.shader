@@ -1,129 +1,125 @@
-Shader "Apascual/OutlineShader_Option1"
+Shader "Apascual/OutlineShader_Sprite"
 {
     Properties
     {
         [MainColor] _BaseColor("Base Color", Color) = (1, 1, 1, 1)
         [MainTexture] _BaseMap("Base Map", 2D) = "white" {}
-
         [Space(10)]
-        _OutColor("Outline Color", Color) = (1, 1, 1, 1)
-        _OutValue("Outline Value", Range(0.0, 0.2)) = 0.01
+        _OutlineColor("Outline Color", Color) = (1, 1, 1, 1)
+        _OutlineWidth("Outline Width", Range(1.0, 10.0)) = 2.0
     }
-
     SubShader
     {
-        // Outline es dibuixa primer i darrere
-        Pass
-        {
-            Tags { "Queue" = "Transparent-1" "RenderType" = "Transparent" }
-
-            ZWrite Off
-            ZTest LEqual
-            Blend SrcAlpha OneMinusSrcAlpha
-
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            struct Attributes
-            {
-                float4 positionOS : POSITION;
-                float2 uv : TEXCOORD0;
-            };
-
-            struct Varyings
-            {
-                float4 positionHCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-            };
-
-            TEXTURE2D(_BaseMap);
-            SAMPLER(sampler_BaseMap);
-
-            float4 _OutColor;
-            float _OutValue;
-
-            float4 outline(float4 vertexPos, float outValue)
-            {
-                float4x4 scale = float4x4
-                (
-                    1 + outValue, 0, 0, 0,
-                    0, 1 + outValue, 0, 0,
-                    0, 0, 1 + outValue, 0,
-                    0, 0, 0, 1
-                );
-
-                return mul(scale, vertexPos);
-            };
-
-            CBUFFER_START(UnityPerMaterial)
-                half4 _BaseColor;
-                float4 _BaseMap_ST;
-            CBUFFER_END
-
-            Varyings vert(Attributes IN)
-            {
-                Varyings OUT;
-                float4 vertexPos = outline(IN.positionOS, _OutValue);
-                OUT.positionHCS = TransformObjectToHClip(vertexPos.xyz);
-                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
-                return OUT;
-            }
-
-            half4 frag(Varyings IN) : SV_Target
-            {
-                half4 col = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
-                return half4(_OutColor.rgb, col.a);
-            }
-            ENDHLSL
+        Tags 
+        { 
+            "Queue" = "Transparent" 
+            "RenderType" = "Transparent"
+            "RenderPipeline" = "UniversalPipeline"
         }
-
-        // Sprite base, es dibuixa després
+        
+        Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite Off
+        Cull Off
+        
         Pass
         {
-            Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
-
-            ZWrite Off
-            ZTest LEqual
-            Blend SrcAlpha OneMinusSrcAlpha
-
+            Name "SpriteOutline"
+            
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
+            
             struct Attributes
             {
                 float4 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
+                float4 color : COLOR;
             };
-
+            
             struct Varyings
             {
                 float4 positionHCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
+                float4 color : COLOR;
             };
-
+            
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
-
+            
+            // Unity injecta automàticament aquesta textura del Sprite Renderer
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+            
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
                 float4 _BaseMap_ST;
+                half4 _OutlineColor;
+                float _OutlineWidth;
+                float4 _BaseMap_TexelSize;
+                float4 _MainTex_ST;
+                float4 _MainTex_TexelSize;
             CBUFFER_END
-
+            
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
                 OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+                OUT.color = IN.color;
                 return OUT;
             }
-
+            
             half4 frag(Varyings IN) : SV_Target
             {
-                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv) * _BaseColor;
+                // Utilitzem _MainTex que Unity injecta automàticament des del Sprite Renderer
+                // Si no existeix, fem fallback a _BaseMap
+                #ifdef UNITY_SPRITE_INSTANCING_ENABLED
+                    half4 mainTex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
+                #else
+                    half4 mainTex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                #endif
+                
+                half4 color = mainTex * _BaseColor * IN.color;
+                
+                // Si el píxel ja és opac, retornem el color normal
+                if (color.a > 0.5)
+                {
+                    return color;
+                }
+                
+                // Si el píxel és transparent, comprovem si hi ha outline
+                #ifdef UNITY_SPRITE_INSTANCING_ENABLED
+                    float2 texelSize = _MainTex_TexelSize.xy * _OutlineWidth;
+                #else
+                    float2 texelSize = _BaseMap_TexelSize.xy * _OutlineWidth;
+                #endif
+                
+                // Algorisme millorat: comprovem més direccions en cercle
+                half maxAlpha = 0;
+                const int samples = 16; // Més samples = outline més uniforme
+                
+                for (int i = 0; i < samples; i++)
+                {
+                    float angle = (i / float(samples)) * 6.28318530718; // 2*PI
+                    float2 offset = float2(cos(angle), sin(angle)) * texelSize;
+                    #ifdef UNITY_SPRITE_INSTANCING_ENABLED
+                        half alpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv + offset).a;
+                    #else
+                        half alpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv + offset).a;
+                    #endif
+                    maxAlpha = max(maxAlpha, alpha);
+                }
+                
+                // Si hem trobat alpha al voltant, dibuixem l'outline
+                if (maxAlpha > 0.5)
+                {
+                    // Fem blend suau entre outline i transparent
+                    half outlineAlpha = saturate(maxAlpha * _OutlineColor.a);
+                    return half4(_OutlineColor.rgb, outlineAlpha);
+                }
+                
                 return color;
             }
             ENDHLSL
