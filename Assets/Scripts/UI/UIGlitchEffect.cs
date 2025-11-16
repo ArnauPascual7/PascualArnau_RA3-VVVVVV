@@ -47,6 +47,8 @@ public class UIGlitchEffect : MonoBehaviour
 
     private void OnEnable()
     {
+        isGlitching = false;
+
         if (startOnEnable)
         {
             StartGlitching();
@@ -92,7 +94,7 @@ public class UIGlitchEffect : MonoBehaviour
 
     private IEnumerator PerformGlitch()
     {
-        float elapsed = 0f;
+        //float elapsed = 0f;
         int glitchCount = Random.Range(1, 4);
 
         for (int i = 0; i < glitchCount; i++)

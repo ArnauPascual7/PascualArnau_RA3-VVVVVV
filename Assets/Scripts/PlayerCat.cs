@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(MoveBehaviour), typeof(GravityChangeBehaviour), typeof(MoveAnimBehaviour))]
-[RequireComponent(typeof(ExIdleAnimBehaviour), typeof(SpriteExplosionBehaviour))]
+[RequireComponent(typeof(ExIdleAnimBehaviour), typeof(SpriteExplosionBehaviour), typeof(MeowBehaviour))]
 public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 {
     private InputSystem_Actions inputActions;
@@ -12,6 +12,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     private MoveAnimBehaviour _mab;
     private ExIdleAnimBehaviour _xab;
     private SpriteExplosionBehaviour _sxb;
+    private MeowBehaviour _meowb;
 
     public static event Action PlayerDeath = delegate { };
 
@@ -27,6 +28,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         _mab = GetComponent<MoveAnimBehaviour>();
         _xab = GetComponent<ExIdleAnimBehaviour>();
         _sxb = GetComponent<SpriteExplosionBehaviour>();
+        _meowb = GetComponent<MeowBehaviour>();
     }
 
     private void OnEnable()
@@ -48,10 +50,14 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         if (disable)
         {
             inputActions.Disable();
+
+            _mab.Idle = false;
         }
         else
         {
             inputActions.Enable();
+
+            StartIdle();
         }
     }
 
@@ -67,6 +73,12 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     {
         if (onFloor)
         {
+            if (context.performed)
+            {
+                AudioManager.Instance.PlayClip(AudioClipType.GravitySwitch);
+            }
+
+            _meowb.FlipY();
             _gcb.ChangeGravity();
             _xab.CancelAnimations();
 
@@ -74,8 +86,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
             if (context.canceled)
             {
-                _mab.Idle = true;
-                _xab.SetIdleTime();
+                StartIdle();
             }
         }
     }
@@ -85,6 +96,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         Vector2 direction = context.ReadValue<Vector2>();
 
         _mb.MoveCharacter(direction);
+        _meowb.SetDirection(direction);
         _mab.RunAnimation(direction);
         _xab.CancelAnimations();
 
@@ -92,8 +104,22 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
         if (context.canceled)
         {
-            _mab.Idle = true;
-            _xab.SetIdleTime();
+            StartIdle();
+        }
+    }
+
+    public void OnMiau(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            _meowb.Meow();
+        }
+
+        _mab.Idle = false;
+
+        if (context.canceled)
+        {
+            StartIdle();
         }
     }
 
@@ -120,5 +146,11 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         {
             onFloor = false;
         }
+    }
+
+    private void StartIdle()
+    {
+        _mab.Idle = true;
+        _xab.SetIdleTime();
     }
 }

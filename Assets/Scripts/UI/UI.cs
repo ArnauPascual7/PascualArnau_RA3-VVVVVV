@@ -19,8 +19,6 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
     public static event Action<bool> GameStarted = delegate { };
 
     public static bool GameIsPaused = true;
-    private bool gameIsStarted = false;
-    private bool gameIsOver = false;
 
     private bool firstLoad = true;
 
@@ -42,6 +40,10 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
 
         GameStarted.Invoke(false);
 
+        pauseMenuUI.SetActive(false);
+        gameOverMenuUI.SetActive(false);
+        pauseButton.SetActive(false);
+
         if (firstLoad)
         {
             mainMenuUI.SetActive(true);
@@ -50,30 +52,40 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
         {
             StartGame();
         }
-        
-        pauseMenuUI.SetActive(false);
-        gameOverMenuUI.SetActive(false);
-        pauseButton.SetActive(false);
     }
 
     private void OnEnable()
     {
-        inputActions.Enable();
         PlayerCat.PlayerDeath += GameOver;
     }
     private void OnDisable()
     {
-        inputActions.Disable();
+        DisableInputs(true);
+
         PlayerCat.PlayerDeath -= GameOver;
     }
+
+    private void DisableInputs(bool disable)
+    {
+        if (disable)
+        {
+            inputActions.Disable();
+        }
+        else
+        {
+            inputActions.Enable();
+        }
+    }
+
 
     public void StartGame()
     {
         mainMenuUI.SetActive(false);
         pauseButton.SetActive(true);
 
+        DisableInputs(false);
+
         GameIsPaused = false;
-        gameIsStarted = true;
 
         GameStarted.Invoke(true);
     }
@@ -86,26 +98,34 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
         Time.timeScale = 1f;
 
         GameIsPaused = false;
+        GamePausedEvent.Invoke(false);
     }
 
     public void PauseGame()
     {
+        AudioManager.Instance.PlayClip(AudioClipType.GamePaused);
+
         pauseMenuUI.SetActive(true);
         pauseButton.SetActive(false);
 
         Time.timeScale = 0f;
 
         GameIsPaused = true;
+        GamePausedEvent.Invoke(true);
     }
 
     public void RestartGame()
     {
         firstLoad = false;
+        GameIsPaused = false;
+
+        DisableInputs(false);
 
         Time.timeScale = 1f;
 
         pauseMenuUI.SetActive(false);
         gameOverMenuUI.SetActive(false);
+        pauseButton.SetActive(true);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
@@ -119,16 +139,14 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
 
     public void OnEscape(InputAction.CallbackContext context)
     {
-        if (context.performed && gameIsStarted && !gameIsOver)
+        if (context.performed)
         {
             if (GameIsPaused)
             {
                 ResumeGame();
-                GamePausedEvent.Invoke(false);
             }
             else
             {
-                GamePausedEvent.Invoke(true);
                 PauseGame();
             }
         }
@@ -139,7 +157,8 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
         gameOverMenuUI.SetActive(true);
         pauseButton.SetActive(false);
 
+        DisableInputs(true);
+
         GameIsPaused = true;
-        gameIsOver = true;
     }
 }

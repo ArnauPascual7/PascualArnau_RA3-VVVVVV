@@ -7,7 +7,7 @@ public class SpriteExplosionBehaviour : MonoBehaviour
     [SerializeField] private int piecesX = 4; // Columnes
     [SerializeField] private int piecesY = 4; // Files
     [SerializeField] private float explosionForce = 5f;
-    [SerializeField] private float explosionRadius = 2f;
+    //[SerializeField] private float explosionRadius = 2f;
     [SerializeField] private float pieceLifetime = 3f;
     [SerializeField] private float gravityScale = 1f;
 
