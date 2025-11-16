@@ -3,6 +3,7 @@ using UnityEngine;
 public class CameraFollow : MonoBehaviour
 {
     [Header("Configuració")]
+    [Tooltip("Transform del jugador a seguir")]
     [SerializeField] private Transform Player;
 
     private void LateUpdate()

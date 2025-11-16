@@ -7,6 +7,7 @@ public class MoveBehaviour : MonoBehaviour
     private SpriteRenderer _sr;
 
     [Header("Configuració")]
+    [Tooltip("Velocitat de moviment del personatge")]
     [SerializeField] private float speed;
 
     private void Awake()

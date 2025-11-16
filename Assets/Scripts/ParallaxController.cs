@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class ParallaxController : MonoBehaviour
 {
+    [Tooltip("Velocitat del Parallax (1 és la velocitat normal)")]
+    [Range(0f, 1f)]
     [SerializeField] private float parallaxEffect;
 
     private Transform cameraTransform;

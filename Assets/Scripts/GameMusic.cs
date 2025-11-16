@@ -7,7 +7,7 @@ public class GameMusic : MonoBehaviour
     private void OnEnable()
     {
         _audioSource = GetComponent<AudioSource>();
-        PauseMenu.GamePausedEvent += PlayMusic;
+        UI.GamePausedEvent += PlayMusic;
     }
 
     private void PlayMusic(bool play)

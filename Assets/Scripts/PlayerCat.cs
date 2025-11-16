@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,7 +13,9 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     private ExIdleAnimBehaviour _xab;
     private SpriteExplosionBehaviour _sxb;
 
-    private bool OnFloor = true;
+    public static event Action PlayerDeath = delegate { };
+
+    private bool onFloor = true;
 
     private void Awake()
     {
@@ -29,12 +32,16 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     private void OnEnable()
     {
         DisableInputs(false);
-        PauseMenu.GamePausedEvent += DisableInputs;
+
+        UI.GamePausedEvent += DisableInputs;
+        UI.GameStarted += b => DisableInputs(!b);
     }
     private void OnDisable()
     {
         DisableInputs(true);
-        PauseMenu.GamePausedEvent -= DisableInputs;
+
+        UI.GamePausedEvent -= DisableInputs;
+        UI.GameStarted -= b => DisableInputs(!b);
     }
     private void DisableInputs(bool disable)
     {
@@ -50,24 +57,24 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
     private void Update()
     {
-        if (_mab.idle)
+        if (_mab.Idle)
         {
-            _mab.idle = _xab.CheckIdleTime(_mab.idle);
+            _mab.Idle = _xab.CheckIdleTime(_mab.Idle);
         }
     }
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (OnFloor)
+        if (onFloor)
         {
             _gcb.ChangeGravity();
             _xab.CancelAnimations();
 
-            _mab.idle = false;
+            _mab.Idle = false;
 
             if (context.canceled)
             {
-                _mab.idle = true;
+                _mab.Idle = true;
                 _xab.SetIdleTime();
             }
         }
@@ -81,11 +88,11 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         _mab.RunAnimation(direction);
         _xab.CancelAnimations();
 
-        _mab.idle = false;
+        _mab.Idle = false;
 
         if (context.canceled)
         {
-            _mab.idle = true;
+            _mab.Idle = true;
             _xab.SetIdleTime();
         }
     }
@@ -94,13 +101,15 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     {
         if (collision.gameObject.layer == 20)
         {
-            OnFloor = true;
+            onFloor = true;
 
             _gcb.FinishJump();
         }
 
         if (collision.gameObject.layer == 21)
         {
+            PlayerDeath.Invoke();
+
             _sxb.Explode();
         }
     }
@@ -109,7 +118,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     {
         if (collision.gameObject.layer == 20)
         {
-            OnFloor = false;
+            onFloor = false;
         }
     }
 }
