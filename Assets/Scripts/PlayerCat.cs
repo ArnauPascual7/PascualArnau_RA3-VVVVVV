@@ -138,6 +138,13 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
             _sxb.Explode();
         }
+
+        if (collision.gameObject.layer == 11)
+        {
+            PlayerDeath.Invoke();
+
+            _sxb.Explode();
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)

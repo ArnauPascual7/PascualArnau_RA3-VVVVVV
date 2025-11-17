@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: 7880821ae0e694ff185fd812fdbe7efd
-AssetOrigin:
-  serializedVersion: 1
-  productId: 138128
-  packageName: Warped City Assets Pack
-  packageVersion: 1.0
-  assetPath: Assets/Warped City Assets/Artwork/SPRITES/misc/turret/turret-1.png
-  uploadId: 291119
+guid: cf91df8b201843343a27d7a7c11502ad
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

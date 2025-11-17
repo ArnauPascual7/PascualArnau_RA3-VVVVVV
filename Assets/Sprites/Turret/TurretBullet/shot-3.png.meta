@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: 7880821ae0e694ff185fd812fdbe7efd
-AssetOrigin:
-  serializedVersion: 1
-  productId: 138128
-  packageName: Warped City Assets Pack
-  packageVersion: 1.0
-  assetPath: Assets/Warped City Assets/Artwork/SPRITES/misc/turret/turret-1.png
-  uploadId: 291119
+guid: 89ccaae94a84435439876faba5f8dc1b
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -133,7 +126,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 1b86fa8ce6e4249d1b14eac6c110bbb6
+    spriteID: ca731d80a442449b8acff8c1d2b8e9da
     internalID: 0
     vertices: []
     indices: 
