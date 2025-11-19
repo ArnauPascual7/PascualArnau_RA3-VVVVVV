@@ -13,6 +13,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     private ExIdleAnimBehaviour _xab;
     private SpriteExplosionBehaviour _sxb;
     private MeowBehaviour _meowb;
+    private Vector2 _moveDirection = Vector2.zero;
 
     public static event Action PlayerDeath = delegate { };
 
@@ -67,6 +68,10 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         {
             _mab.Idle = _xab.CheckIdleTime(_mab.Idle);
         }
+
+        _mb.MoveCharacter(_moveDirection);
+        _meowb.SetDirection(_moveDirection);
+        _mab.RunAnimation(_moveDirection);
     }
 
     public void OnJump(InputAction.CallbackContext context)
@@ -93,11 +98,8 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        Vector2 direction = context.ReadValue<Vector2>();
+        _moveDirection = context.ReadValue<Vector2>();
 
-        _mb.MoveCharacter(direction);
-        _meowb.SetDirection(direction);
-        _mab.RunAnimation(direction);
         _xab.CancelAnimations();
 
         _mab.Idle = false;
@@ -116,6 +118,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
         }
 
         _mab.Idle = false;
+        _xab.CancelAnimations();
 
         if (context.canceled)
         {
