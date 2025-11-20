@@ -12,8 +12,10 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
     [Header("Elements UI")]
     [SerializeField] private GameObject mainMenuUI;
     [SerializeField] private GameObject pauseMenuUI;
+    [SerializeField] private GameObject winMenuUI;
     [SerializeField] private GameObject gameOverMenuUI;
     [SerializeField] private GameObject pauseButton;
+    [SerializeField] private GameObject zzzCatDialogue;
 
     public static event Action<bool> GamePausedEvent = delegate { };
     public static event Action<bool> GameStarted = delegate { };
@@ -57,12 +59,14 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
     private void OnEnable()
     {
         PlayerCat.PlayerDeath += GameOver;
+        ZzzCatTrigger.ZzzCatDialogue += ShowZzzCatDialogue;
     }
     private void OnDisable()
     {
         DisableInputs(true);
 
         PlayerCat.PlayerDeath -= GameOver;
+        ZzzCatTrigger.ZzzCatDialogue -= ShowZzzCatDialogue;
     }
 
     private void DisableInputs(bool disable)
@@ -93,6 +97,7 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
     public void ResumeGame()
     {
         pauseMenuUI.SetActive(false);
+        zzzCatDialogue.SetActive(false);
         pauseButton.SetActive(true);
 
         Time.timeScale = 1f;
@@ -160,5 +165,31 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
         DisableInputs(true);
 
         GameIsPaused = true;
+    }
+
+    private void Win()
+    {
+        winMenuUI.SetActive(true);
+        pauseButton.SetActive(false);
+
+        DisableInputs(true);
+
+        Time.timeScale = 0f;
+
+        GameIsPaused = true;
+        GamePausedEvent.Invoke(true);
+    }
+
+    private void ShowZzzCatDialogue()
+    {
+        zzzCatDialogue.SetActive(true);
+        pauseButton.SetActive(false);
+
+        DisableInputs(true);
+
+        Time.timeScale = 0f;
+
+        GameIsPaused = true;
+        GamePausedEvent.Invoke(true);
     }
 }
