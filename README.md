@@ -7,11 +7,14 @@
 ## Controls
 
 WASD - Moviment
+
 Space - Canvi de Gravetat
+
 E - Miau?
+
 Escape - Pausa
 
-## Requisits d'entrega
+## Entrega
 
 ### Personatge
 
