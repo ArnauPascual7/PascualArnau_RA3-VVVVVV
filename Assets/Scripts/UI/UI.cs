@@ -60,6 +60,7 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
     {
         PlayerCat.PlayerDeath += GameOver;
         ZzzCatTrigger.ZzzCatDialogue += ShowZzzCatDialogue;
+        WinGameTrigger.GameWin += Win;
     }
     private void OnDisable()
     {
@@ -67,6 +68,7 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
 
         PlayerCat.PlayerDeath -= GameOver;
         ZzzCatTrigger.ZzzCatDialogue -= ShowZzzCatDialogue;
+        WinGameTrigger.GameWin -= Win;
     }
 
     private void DisableInputs(bool disable)
@@ -100,6 +102,8 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
         zzzCatDialogue.SetActive(false);
         pauseButton.SetActive(true);
 
+        DisableInputs(false);
+
         Time.timeScale = 1f;
 
         GameIsPaused = false;
@@ -130,6 +134,7 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
 
         pauseMenuUI.SetActive(false);
         gameOverMenuUI.SetActive(false);
+        winMenuUI.SetActive(false);
         pauseButton.SetActive(true);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -173,23 +178,28 @@ public class UI : MonoBehaviour, InputSystem_Actions.IMenuActions
         pauseButton.SetActive(false);
 
         DisableInputs(true);
-
-        Time.timeScale = 0f;
-
-        GameIsPaused = true;
-        GamePausedEvent.Invoke(true);
     }
 
-    private void ShowZzzCatDialogue()
+    private void ShowZzzCatDialogue(bool show)
     {
-        zzzCatDialogue.SetActive(true);
-        pauseButton.SetActive(false);
+        if (show)
+        {
+            zzzCatDialogue.SetActive(true);
+            pauseButton.SetActive(false);
 
-        DisableInputs(true);
+            DisableInputs(true);
+        }
+        else
+        {
+            ContinueGame();
+        }
+    }
 
-        Time.timeScale = 0f;
+    public void ContinueGame()
+    {
+        zzzCatDialogue.SetActive(false);
+        pauseButton.SetActive(true);
 
-        GameIsPaused = true;
-        GamePausedEvent.Invoke(true);
+        DisableInputs(false);
     }
 }

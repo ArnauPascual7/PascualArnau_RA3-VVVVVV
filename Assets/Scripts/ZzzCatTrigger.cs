@@ -3,16 +3,21 @@ using UnityEngine;
 
 public class ZzzCatTrigger : MonoBehaviour
 {
-    public static event Action ZzzCatDialogue = delegate { };
-
-    private bool triggered = false;
+    public static event Action<bool> ZzzCatDialogue = delegate { };
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!triggered && collision.gameObject.layer == 10)
+        if (collision.gameObject.layer == 10)
         {
-            triggered = true;
-            ZzzCatDialogue.Invoke();
+            ZzzCatDialogue.Invoke(true);
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == 10)
+        {
+            ZzzCatDialogue.Invoke(false);
         }
     }
 }

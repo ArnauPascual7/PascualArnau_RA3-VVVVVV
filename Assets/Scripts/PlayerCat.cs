@@ -38,6 +38,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
         UI.GamePausedEvent += DisableInputs;
         UI.GameStarted += b => DisableInputs(!b);
+        FinishGameTrigger.GameFinished += OnGameFinished;
     }
     private void OnDisable()
     {
@@ -45,6 +46,7 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
         UI.GamePausedEvent -= DisableInputs;
         UI.GameStarted -= b => DisableInputs(!b);
+        FinishGameTrigger.GameFinished -= OnGameFinished;
     }
     private void DisableInputs(bool disable)
     {
@@ -162,5 +164,12 @@ public class PlayerCat : MonoBehaviour, InputSystem_Actions.IPlayerActions
     {
         _mab.Idle = true;
         _xab.SetIdleTime();
+    }
+
+    private void OnGameFinished()
+    {
+        DisableInputs(true);
+
+        _moveDirection = Vector2.right;
     }
 }
