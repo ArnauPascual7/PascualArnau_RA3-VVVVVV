@@ -6,7 +6,7 @@
 
 ## Controls
 
-WASD - Moviment
+A, D - Moviment
 
 Space - Canvi de Gravetat
 
